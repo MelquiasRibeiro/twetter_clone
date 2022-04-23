@@ -1,10 +1,13 @@
 import UIKit
+import Firebase
 
 class RegistrationController: UIViewController {
 
     //MARK: - Properties
     
-  
+    private let imagePicker = UIImagePickerController()
+    private var profileImage:UIImage?
+    
     private lazy var plusPhotoButton: UIButton = {
         let plusPhotoButton = UIButton(type: .system)
         plusPhotoButton.setImage(UIImage(named: "plus_photo"), for: .normal)
@@ -56,13 +59,11 @@ class RegistrationController: UIViewController {
     
     private lazy var fullNameTextField:UITextField = {
         let fullNameTextField = Utilities().textField(withPlaceHolder: "Full Name")
-        fullNameTextField.isSecureTextEntry = true
         return fullNameTextField
         
     }()
     private lazy var userNameTextField:UITextField = {
         let userNameTextField = Utilities().textField(withPlaceHolder: "User Name")
-        userNameTextField.isSecureTextEntry = true
         return userNameTextField
         
     }()
@@ -97,7 +98,22 @@ class RegistrationController: UIViewController {
     
     //MARK: - Selectors
     @objc func handleRegister(){
-       print("saved")
+        guard let profileImage = profileImage else {
+            print("please, select a profile image")
+            return
+        }
+        guard let email =  emailTextField.text else {return}
+        guard let password  = passwordTextField.text else {return}
+        guard let fullName = fullNameTextField.text else {return}
+        guard let userName = userNameTextField.text else {return}
+        
+        let userData:RegisterUser = RegisterUser(userCredentials:UserCredentials(email: email, password: password), fullName: fullName, userName: userName, profileImage: profileImage)
+        
+        AuthService.shared.registration(userData: userData) { (error,ref) in
+            let tabarController = MainTabBarController()
+             self.navigationController?.pushViewController(tabarController, animated: true)
+                     }
+        
     }
     
     @objc func handleShowSignIn(){
@@ -106,7 +122,7 @@ class RegistrationController: UIViewController {
     }
     
     @objc func handleAddProfilePhoto(){
-        print ("saved")
+        present(imagePicker,animated: true,completion: nil)
     }
     
     
@@ -116,6 +132,9 @@ class RegistrationController: UIViewController {
         view.backgroundColor = .twitterBlue
         navigationController?.navigationBar.isHidden = true
         navigationController?.navigationBar.barStyle = .black
+        
+        imagePicker.delegate = self
+        imagePicker.allowsEditing = true
         
         view.addSubview(plusPhotoButton)
         plusPhotoButton.centerX(inView: view, topAnchor: view.safeAreaLayoutGuide.topAnchor)
@@ -139,4 +158,24 @@ class RegistrationController: UIViewController {
 
 
 
+}
+// MARK: - RegistrationController
+extension RegistrationController:UIImagePickerControllerDelegate, UINavigationControllerDelegate{
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        guard let profileImage = info[.editedImage] as? UIImage else {return}
+        
+        self.profileImage = profileImage
+        plusPhotoButton.layer.cornerRadius = 150/2
+        plusPhotoButton.layer.masksToBounds = true
+        plusPhotoButton.imageView?.contentMode = .scaleAspectFill
+        plusPhotoButton.clipsToBounds = true
+        plusPhotoButton.layer.borderColor = UIColor.white.cgColor
+        plusPhotoButton.layer.borderWidth = 3
+        
+        self.plusPhotoButton.setImage(profileImage.withRenderingMode(.alwaysOriginal), for: .normal)
+        
+        dismiss(animated: true)
+        
+        
+    }
 }

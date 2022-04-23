@@ -10,15 +10,15 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-    //let mainTabBarController = MainTabBarController()
-    let loginController = LoginController()
+    let mainTabBarController = MainTabBarController()
+    //let loginController = LoginController()
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
 
         guard let scene = (scene as? UIWindowScene) else { return }
         
         window = UIWindow(windowScene: scene)
-        window?.rootViewController = UINavigationController(rootViewController: loginController)
+        window?.rootViewController = UINavigationController(rootViewController: mainTabBarController)
         window?.makeKeyAndVisible()
         
     }

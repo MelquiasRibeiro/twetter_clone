@@ -1,9 +1,18 @@
 import UIKit
+import Firebase
 
 class MainTabBarController: UITabBarController {
 
     
     //MARK: - Properties
+    
+    var user: User? {
+        didSet {
+            guard let nav = viewControllers?[0] as? UINavigationController else {return}
+            guard let feed = nav.viewControllers.first as? FeedController else {return}
+            feed.user = user
+        }
+    }
     
     let actionButton:UIButton = {
         let actionButton = UIButton(type: .system)
@@ -18,16 +27,50 @@ class MainTabBarController: UITabBarController {
 
     
     @objc func actionButtonTapped(){
-        print("clicado")
+        let newTweetController = UploadTwetterController()
+        newTweetController.modalPresentationStyle = .fullScreen
+        self.present(newTweetController, animated: true, completion: nil)
+        
     }
+    
     //MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureViewControllers()
-        configureUI()
+        self.authenticationUserAndConfigureUI()
     }
     
+    //MARK: - API
+    
+    func fetchUserData(){
+        UserService.shared.getUserData{ user in
+            self.user = user
+        }
+    }
+    
+    func authenticationUserAndConfigureUI(){
+        if Auth.auth().currentUser == nil {
+            DispatchQueue.main.async {
+                let nav = UINavigationController(rootViewController: LoginController())
+                nav.modalPresentationStyle = .fullScreen
+                
+                self.present(nav, animated: true,completion: nil)
+            }
+
+        }else{
+            configureViewControllers()
+            configureUI()
+            fetchUserData()
+        }
+    }
+    
+    func logUserOut(){
+        do {
+            try Auth.auth().signOut()
+        }catch let error {
+            print("error: \(error)")
+        }
+    }
     
     //MARK: - Helpers
 

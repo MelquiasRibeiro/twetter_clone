@@ -72,8 +72,24 @@ class LoginController: UIViewController {
     
     //MARK: - Selectors
     @objc func handleLogin(){
-        let homeController = MainTabBarController()
-        navigationController?.pushViewController(homeController, animated: true)
+        guard let email = emailTextField.text else { return}
+        guard let password = passwordTextField.text else { return}
+        
+        let userCredentials: UserCredentials = UserCredentials(email: email, password: password)
+        
+        AuthService.shared.logUserIn(userCredentials:userCredentials,completion: {
+            (result,error)in
+            if let error = error {
+                print(error.localizedDescription)
+            }
+            
+           let tabarController = MainTabBarController()
+            
+            self.navigationController?.pushViewController(tabarController, animated: true)
+            
+        } )
+        
+
     }
     @objc func handleShowSignUp(){
             let registrationController = RegistrationController()
